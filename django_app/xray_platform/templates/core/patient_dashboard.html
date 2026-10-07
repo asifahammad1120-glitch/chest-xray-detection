@@ -1,0 +1,37 @@
+{% extends "core/base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4>Welcome, {{ patient.user.get_full_name|default:patient.user.username }}</h4>
+    <a href="{% url 'new_examination' %}" class="btn btn-primary">+ New X-Ray Examination</a>
+</div>
+
+<div class="card p-3">
+    <h5>Your Examinations</h5>
+    {% if examinations %}
+        <table class="table table-hover mt-3">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Date</th>
+                    <th>Hospital/Clinic</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for exam in examinations %}
+                <tr>
+                    <td>#{{ exam.id }}</td>
+                    <td>{{ exam.examination_date }}</td>
+                    <td>{{ exam.hospital_clinic }}</td>
+                    <td><span class="badge bg-info text-dark">{{ exam.get_status_display }}</span></td>
+                    <td><a href="{% url 'examination_detail' exam_id=exam.id %}" class="btn btn-sm btn-outline-primary">View</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="text-muted mt-3">You haven't submitted any X-ray examinations yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

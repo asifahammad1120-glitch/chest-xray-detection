@@ -1,0 +1,29 @@
+{% extends "core/base.html" %}
+{% block content %}
+<div class="text-center py-5">
+    <h1 class="mb-3">AI-Assisted Chest X-Ray Abnormality Detection</h1>
+    <p class="text-muted col-md-8 mx-auto">
+        Upload a chest X-ray for automated abnormality detection and classification,
+        reviewed and verified by a licensed radiologist before any report is finalized.
+    </p>
+
+    <div class="row justify-content-center mt-4">
+        <div class="col-md-4 mb-3">
+            <div class="card p-4">
+                <h5>Patient</h5>
+                <p class="text-muted small">Submit an X-ray examination and view your reports.</p>
+                <a href="{% url 'patient_register' %}" class="btn btn-primary btn-sm mb-2">Register as Patient</a>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card p-4">
+                <h5>Doctor / Radiologist</h5>
+                <p class="text-muted small">Review AI analysis and verify medical reports.</p>
+                <a href="{% url 'doctor_register' %}" class="btn btn-primary btn-sm mb-2">Register as Doctor</a>
+            </div>
+        </div>
+    </div>
+
+    <a href="{% url 'login' %}" class="btn btn-outline-secondary mt-3">Already have an account? Log in</a>
+</div>
+{% endblock %}

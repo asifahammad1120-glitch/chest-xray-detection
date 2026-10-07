@@ -1,0 +1,17 @@
+# datasets (too large for GitHub, documented in README instead)
+datasets/
+
+# Django
+django_app/xray_platform/db.sqlite3
+django_app/xray_platform/media/
+__pycache__/
+*.pyc
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+.env

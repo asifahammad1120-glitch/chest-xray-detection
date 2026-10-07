@@ -1,0 +1,33 @@
+{% extends "core/base.html" %}
+{% block content %}
+<h4 class="mb-4">Welcome, Dr. {{ doctor.user.get_full_name|default:doctor.user.username }}</h4>
+
+<div class="card p-3">
+    <h5>Assigned Examinations</h5>
+    {% if examinations %}
+        <table class="table table-hover mt-3">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Patient</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for exam in examinations %}
+                <tr>
+                    <td>#{{ exam.id }}</td>
+                    <td>{{ exam.patient }}</td>
+                    <td>{{ exam.examination_date }}</td>
+                    <td><span class="badge bg-info text-dark">{{ exam.get_status_display }}</span></td>
+                    <td><a href="{% url 'examination_detail' exam_id=exam.id %}" class="btn btn-sm btn-outline-primary">View</a></td>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="text-muted mt-3">No examinations assigned yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

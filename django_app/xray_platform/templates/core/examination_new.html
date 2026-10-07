@@ -1,0 +1,15 @@
+{% extends "core/base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card p-4">
+            <h4 class="mb-3">New X-Ray Examination</h4>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-primary w-100 mt-2">Submit for AI Analysis</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

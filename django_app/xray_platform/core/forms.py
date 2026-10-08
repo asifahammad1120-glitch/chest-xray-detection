@@ -3,7 +3,23 @@ from django.contrib.auth.models import User
 from .models import Patient, Doctor
 
 
-class PatientRegistrationForm(forms.Form):
+class BootstrapFormMixin:
+    """Adds Bootstrap classes to every field widget in a form."""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            widget = field.widget
+            if isinstance(widget, (forms.Select, forms.SelectMultiple)):
+                css = "form-select"
+            elif isinstance(widget, forms.CheckboxInput):
+                css = "form-check-input"
+            else:
+                css = "form-control"
+            widget.attrs["class"] = f"{widget.attrs.get('class', '')} {css}".strip()
+            if isinstance(widget, forms.Textarea):
+                widget.attrs.setdefault("rows", 3)
+
+class PatientRegistrationForm(BootstrapFormMixin, forms.Form):
     # Fields from the assignment's Patient Registration spec:
     # Full Name, Username, Email, Age, Gender, Mobile Number, Password
     full_name = forms.CharField(max_length=150)
@@ -48,7 +64,7 @@ class PatientRegistrationForm(forms.Form):
         return patient
 
 
-class DoctorRegistrationForm(forms.Form):
+class DoctorRegistrationForm(BootstrapFormMixin, forms.Form):
     # Fields from the assignment's Doctor Registration spec:
     # Doctor Name, Username, Email, Medical Registration Number,
     # Mobile Number, Specialization, Hospital/Clinic, City, Office Address, Password
@@ -109,7 +125,7 @@ class DoctorRegistrationForm(forms.Form):
 from .models import Doctor, XRayExamination, XRayImage
  
  
-class ExaminationForm(forms.Form):
+class ExaminationForm(BootstrapFormMixin, forms.Form):
     doctor = forms.ModelChoiceField(
         queryset=Doctor.objects.filter(is_approved=True),
         empty_label="Select a doctor",

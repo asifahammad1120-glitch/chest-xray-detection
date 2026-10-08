@@ -19,7 +19,10 @@ class Doctor(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Dr. {self.user.get_full_name() or self.user.username}"
+       name = self.user.get_full_name() or self.user.username
+       if name.lower().startswith(("dr.", "dr ")):
+          return name
+       return f"Dr. {name}"
 
 
 class Patient(models.Model):

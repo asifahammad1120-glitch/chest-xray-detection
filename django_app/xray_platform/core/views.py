@@ -8,7 +8,14 @@ from .models import MedicalReport
 from .forms import ExaminationForm
 from .models import XRayImage, DetectionResult, ClassificationResult, AbnormalityCategory
 from .ai_pipeline import run_full_pipeline
-
+from django.http import HttpResponse
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import mm
+from reportlab.lib import colors
+from reportlab.platypus import (
+    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image as RLImage
+)
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from .forms import PatientRegistrationForm, DoctorRegistrationForm
 from .models import Patient, Doctor, XRayExamination
 
@@ -90,28 +97,35 @@ def logout_view(request):
     return redirect("home")
 
 
-# ── Patient dashboard ───────────────────────────────────────────
-
 @login_required
 def patient_dashboard(request):
     patient = get_object_or_404(Patient, user=request.user)
     examinations = patient.examinations.order_by("-created_at")
+    total = examinations.count()
+    verified = examinations.filter(status="verified").count()
     return render(request, "core/patient_dashboard.html", {
         "patient": patient,
         "examinations": examinations,
+        "total_count": total,
+        "verified_count": verified,
+        "pending_count": total - verified,
     })
 
-
-# ── Doctor dashboard ────────────────────────────────────────────
 
 @login_required
 def doctor_dashboard(request):
     doctor = get_object_or_404(Doctor, user=request.user)
     examinations = doctor.examinations.order_by("-created_at")
+    total = examinations.count()
+    verified = examinations.filter(status="verified").count()
     return render(request, "core/doctor_dashboard.html", {
         "doctor": doctor,
         "examinations": examinations,
+        "total_count": total,
+        "verified_count": verified,
+        "pending_count": total - verified,
     })
+
 
 @login_required
 def new_examination(request):
@@ -242,4 +256,114 @@ def examination_review(request, exam_id):
         report.save()
  
     return redirect("examination_detail", exam_id=exam_id)
+
+@login_required
+def download_report_pdf(request, exam_id):
+    examination = get_object_or_404(XRayExamination, id=exam_id)
+ 
+    # Same access control as the detail page
+    is_owner_patient = hasattr(request.user, "patient") and examination.patient.user == request.user
+    is_assigned_doctor = hasattr(request.user, "doctor") and examination.doctor and examination.doctor.user == request.user
+    if not (is_owner_patient or is_assigned_doctor or request.user.is_superuser):
+        messages.error(request, "You do not have permission to view this report.")
+        return redirect("home")
+ 
+    report = getattr(examination, "report", None)
+    if not report or report.status != "verified":
+        messages.error(request, "This report has not been verified yet.")
+        return redirect("examination_detail", exam_id=exam_id)
+ 
+    xray_image = getattr(examination, "xray_image", None)
+    detections = xray_image.detections.select_related(
+        "abnormality_category", "classification__predicted_category"
+    ) if xray_image else []
+ 
+    # ── Build the PDF ──
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="medical_report_exam_{examination.id}.pdf"'
+ 
+    doc = SimpleDocTemplate(response, pagesize=A4, topMargin=20 * mm, bottomMargin=20 * mm)
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle("TitleCustom", parent=styles["Title"], fontSize=16)
+    heading_style = ParagraphStyle("HeadingCustom", parent=styles["Heading2"], spaceBefore=12, spaceAfter=6)
+    body_style = styles["BodyText"]
+ 
+    elements = []
+ 
+    # Title
+    elements.append(Paragraph("AI-Assisted Chest X-Ray Medical Report", title_style))
+    elements.append(Paragraph("This report combines AI-generated findings with a licensed doctor's clinical review.", body_style))
+    elements.append(Spacer(1, 10))
+ 
+    # Patient / exam info table
+    info_data = [
+        ["Patient", str(examination.patient)],
+        ["Age / Gender", f"{examination.patient.age} / {examination.patient.get_gender_display()}"],
+        ["Examination Date", str(examination.examination_date)],
+        ["Hospital / Clinic", examination.hospital_clinic],
+        ["Reviewing Doctor", str(examination.doctor) if examination.doctor else "—"],
+        ["Report Status", report.get_status_display()],
+    ]
+    info_table = Table(info_data, colWidths=[50 * mm, 110 * mm])
+    info_table.setStyle(TableStyle([
+        ("FONTNAME", (0, 0), (0, -1), "Helvetica-Bold"),
+        ("FONTSIZE", (0, 0), (-1, -1), 10),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.lightgrey),
+    ]))
+    elements.append(info_table)
+    elements.append(Spacer(1, 14))
+ 
+    # Annotated X-ray image
+    if xray_image and xray_image.annotated_image:
+        elements.append(Paragraph("Annotated X-Ray", heading_style))
+        elements.append(RLImage(xray_image.annotated_image.path, width=140 * mm, height=140 * mm, kind="proportional"))
+        elements.append(Spacer(1, 10))
+ 
+    # AI findings table
+    elements.append(Paragraph("AI Detection & Classification Findings", heading_style))
+    if detections:
+        table_data = [["Detected Region", "Detection Conf.", "CNN Classification", "Classification Conf."]]
+        for det in detections:
+            classification = getattr(det, "classification", None)
+            table_data.append([
+                det.abnormality_category.name,
+                f"{det.confidence_score:.1%}",
+                classification.predicted_category.name if classification else "—",
+                f"{classification.confidence_score:.1%}" if classification else "—",
+            ])
+        findings_table = Table(table_data, colWidths=[55 * mm, 30 * mm, 50 * mm, 25 * mm])
+        findings_table.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#0d6efd")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, -1), 9),
+            ("GRID", (0, 0), (-1, -1), 0.5, colors.lightgrey),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+        ]))
+        elements.append(findings_table)
+    else:
+        elements.append(Paragraph("No abnormalities detected by the AI model.", body_style))
+    elements.append(Spacer(1, 14))
+ 
+    # Doctor's clinical review
+    elements.append(Paragraph("Doctor's Clinical Observation", heading_style))
+    elements.append(Paragraph(report.clinical_observation or "—", body_style))
+ 
+    elements.append(Paragraph("Final Interpretation", heading_style))
+    elements.append(Paragraph(report.final_interpretation or "—", body_style))
+ 
+    if report.additional_notes:
+        elements.append(Paragraph("Additional Notes", heading_style))
+        elements.append(Paragraph(report.additional_notes, body_style))
+ 
+    elements.append(Spacer(1, 16))
+    elements.append(Paragraph(
+        "<i>This is an AI-assisted analysis. The final clinical interpretation above has been "
+        "provided and verified by a qualified doctor/radiologist.</i>",
+        body_style
+    ))
+ 
+    doc.build(elements)
+    return response
  

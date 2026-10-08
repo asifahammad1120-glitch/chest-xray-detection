@@ -1,0 +1,99 @@
+:root {
+  --brand: #0f6fb5;
+  --brand-dark: #0a4f82;
+  --accent: #14b8a6;
+  --navy: #0b2545;
+  --bg: #f4f7fb;
+  --text: #1f2d3d;
+  --muted: #6b7a90;
+  --border: #e6ecf3;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* Navbar */
+.app-navbar { background: linear-gradient(90deg, var(--navy), #13406b); }
+.app-navbar .navbar-brand { font-weight: 700; letter-spacing: .2px; }
+.app-navbar .nav-link { color: rgba(255,255,255,.8); }
+.app-navbar .nav-link:hover { color: #fff; }
+
+/* Buttons */
+.btn { border-radius: 8px; font-weight: 500; }
+.btn-primary {
+  --bs-btn-bg: var(--brand);
+  --bs-btn-border-color: var(--brand);
+  --bs-btn-hover-bg: var(--brand-dark);
+  --bs-btn-hover-border-color: var(--brand-dark);
+  --bs-btn-active-bg: var(--brand-dark);
+  --bs-btn-active-border-color: var(--brand-dark);
+}
+
+/* Cards */
+.card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(16, 42, 67, .05);
+}
+.card-hover { transition: transform .15s ease, box-shadow .15s ease; }
+.card-hover:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(16, 42, 67, .12); }
+
+/* Hero */
+.hero {
+  background: linear-gradient(135deg, var(--navy) 0%, #13406b 55%, var(--brand) 100%);
+  color: #fff;
+  border-radius: 20px;
+  padding: 4rem 1.5rem;
+}
+.hero p { color: rgba(255, 255, 255, .8); }
+
+.feature-icon {
+  width: 52px; height: 52px;
+  border-radius: 14px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: rgba(15, 111, 181, .1);
+  color: var(--brand);
+  font-size: 1.5rem;
+}
+
+/* Forms */
+.auth-card { max-width: 520px; margin: 1.5rem auto; }
+.form-label { font-weight: 500; font-size: .9rem; }
+.form-control, .form-select { border-radius: 8px; padding: .6rem .8rem; border-color: #d5dde8; }
+.form-control:focus, .form-select:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 .2rem rgba(15, 111, 181, .15);
+}
+
+/* Tables */
+.table > :not(caption) > * > * { padding: .85rem .75rem; }
+.table thead th {
+  font-size: .75rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--muted);
+}
+
+/* Status badges (used on dashboards in the next round) */
+.status-badge { padding: .35em .75em; border-radius: 999px; font-size: .75rem; font-weight: 600; }
+.status-submitted       { background: #e8eef5; color: #43556b; }
+.status-ai_processed    { background: #dff0fb; color: #0a4f82; }
+.status-doctor_reviewed { background: #fff3d6; color: #8a5a00; }
+.status-verified        { background: #d9f5ee; color: #0b7a62; }
+
+.site-footer { color: var(--muted); font-size: .85rem; padding: 2rem 0; }
+
+/* Stat card icon tones */
+.feature-icon.teal  { background: rgba(20, 184, 166, .12); color: #0b7a62; }
+.feature-icon.amber { background: rgba(245, 158, 11, .14); color: #8a5a00; }
+
+/* Soft pills (reuse .status-badge for the shape) */
+.pill-ok   { background: #d9f5ee; color: #0b7a62; }
+.pill-warn { background: #fff3d6; color: #8a5a00; }
+
+/* Confidence bars */
+.progress { background-color: var(--border); }
+.progress-bar { background-color: var(--brand); }

@@ -1,29 +1,61 @@
 {% extends "core/base.html" %}
 {% block content %}
-<div class="text-center py-5">
-    <h1 class="mb-3">AI-Assisted Chest X-Ray Abnormality Detection</h1>
-    <p class="text-muted col-md-8 mx-auto">
-        Upload a chest X-ray for automated abnormality detection and classification,
-        reviewed and verified by a licensed radiologist before any report is finalized.
-    </p>
 
-    <div class="row justify-content-center mt-4">
-        <div class="col-md-4 mb-3">
-            <div class="card p-4">
-                <h5>Patient</h5>
-                <p class="text-muted small">Submit an X-ray examination and view your reports.</p>
-                <a href="{% url 'patient_register' %}" class="btn btn-primary btn-sm mb-2">Register as Patient</a>
+<section class="hero text-center mb-5">
+    <span class="badge rounded-pill bg-light text-dark mb-3 px-3 py-2">
+        <i class="bi bi-stars me-1"></i> AI-assisted · Doctor-verified
+    </span>
+    <h1 class="display-5 fw-bold mb-3">Chest X-ray analysis,<br>reviewed by a radiologist</h1>
+    <p class="lead col-lg-7 mx-auto mb-4">
+        Upload a chest X-ray and get an AI-generated analysis of possible abnormalities,
+        then a verified report from a qualified doctor.
+    </p>
+    <div class="d-flex flex-wrap justify-content-center gap-2">
+    {% if user.is_authenticated %}
+        {% if user.patient %}
+            <a class="btn btn-light btn-lg px-4" href="{% url 'patient_dashboard' %}">Go to my dashboard</a>
+        {% elif user.doctor %}
+            <a class="btn btn-light btn-lg px-4" href="{% url 'doctor_dashboard' %}">Go to my dashboard</a>
+        {% else %}
+            <a class="btn btn-light btn-lg px-4" href="/admin/">Open admin panel</a>
+        {% endif %}
+    {% else %}
+        <a class="btn btn-light btn-lg px-4" href="{% url 'patient_register' %}">Get started as a patient</a>
+        <a class="btn btn-outline-light btn-lg px-4" href="{% url 'doctor_register' %}">I'm a doctor</a>
+    {% endif %}
+</div>
+</section>
+
+<section class="mb-5">
+    <h5 class="text-center fw-bold mb-4">How it works</h5>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card card-hover h-100 p-4 text-center">
+                <div class="feature-icon mx-auto mb-3"><i class="bi bi-cloud-arrow-up"></i></div>
+                <h6 class="fw-bold">1. Upload</h6>
+                <p class="text-muted small mb-0">Submit your chest X-ray with basic examination details and choose your doctor.</p>
             </div>
         </div>
-        <div class="col-md-4 mb-3">
-            <div class="card p-4">
-                <h5>Doctor / Radiologist</h5>
-                <p class="text-muted small">Review AI analysis and verify medical reports.</p>
-                <a href="{% url 'doctor_register' %}" class="btn btn-primary btn-sm mb-2">Register as Doctor</a>
+        <div class="col-md-4">
+            <div class="card card-hover h-100 p-4 text-center">
+                <div class="feature-icon mx-auto mb-3"><i class="bi bi-cpu"></i></div>
+                <h6 class="fw-bold">2. AI analysis</h6>
+                <p class="text-muted small mb-0">YOLOv8 locates suspicious regions and a CNN classifies each one, across 14 abnormality types.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card card-hover h-100 p-4 text-center">
+                <div class="feature-icon mx-auto mb-3"><i class="bi bi-clipboard2-check"></i></div>
+                <h6 class="fw-bold">3. Doctor review</h6>
+                <p class="text-muted small mb-0">A doctor reviews the AI output, adds a clinical interpretation, and verifies the final report.</p>
             </div>
         </div>
     </div>
+</section>
 
-    <a href="{% url 'login' %}" class="btn btn-outline-secondary mt-3">Already have an account? Log in</a>
-</div>
+{% if not user.is_authenticated %}
+<p class="text-center text-muted small">
+    Already have an account? <a href="{% url 'login' %}">Log in</a>
+</p>
+{% endif %}
 {% endblock %}

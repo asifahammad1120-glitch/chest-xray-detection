@@ -20,7 +20,7 @@ import tensorflow as tf
 # ── Model paths ──────────────────────────────────────────────────
 # Adjust these if your models folder lives somewhere else relative
 # to the Django project.
-YOLO_MODEL_PATH = settings.BASE_DIR.parent.parent / "models" / "yolo_best.pt"
+YOLO_MODEL_PATH = settings.BASE_DIR.parent.parent / "models" / "best.pt"
 CNN_MODEL_PATH = settings.BASE_DIR.parent.parent / "models" / "cnn_best.keras"
 
 # Must match the exact order Keras used when training (alphabetical,

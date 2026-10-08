@@ -1,16 +1,18 @@
 {% extends "core/base.html" %}
+{% block title %}Doctor registration · ChestXray AI{% endblock %}
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card p-4">
-            <h4 class="mb-3">Doctor / Radiologist Registration</h4>
-            <p class="text-muted small">Your account will need admin approval before you can log in.</p>
-            <form method="post">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit" class="btn btn-primary w-100 mt-2">Register</button>
-            </form>
-        </div>
+<div class="auth-card">
+    <div class="card p-4 p-md-5">
+        <h4 class="fw-bold mb-1">Doctor / radiologist registration</h4>
+        <p class="text-muted small mb-4">
+            <i class="bi bi-info-circle me-1"></i>An admin must approve your account before you can log in.
+        </p>
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% include "core/_form.html" %}
+            <button type="submit" class="btn btn-primary w-100 py-2 mt-2">Submit registration</button>
+        </form>
+        <p class="text-center small text-muted mt-3 mb-0">Already approved? <a href="{% url 'login' %}">Log in</a></p>
     </div>
 </div>
 {% endblock %}

@@ -1,33 +1,59 @@
 {% extends "core/base.html" %}
+{% block title %}Doctor dashboard · ChestXray AI{% endblock %}
 {% block content %}
-<h4 class="mb-4">Welcome, Dr. {{ doctor.user.get_full_name|default:doctor.user.username }}</h4>
 
-<div class="card p-3">
-    <h5>Assigned Examinations</h5>
+<div class="mb-4">
+    <h3 class="fw-bold mb-0">Welcome, {{ doctor }}</h3>
+    <p class="text-muted mb-0">{{ doctor.specialization }} · {{ doctor.hospital_clinic }}</p>
+</div>
+
+<div class="row g-3 mb-4">
+    {% include "core/_stat_card.html" with icon="bi-files" label="Assigned to you" value=total_count %}
+    {% include "core/_stat_card.html" with icon="bi-hourglass-split" label="Awaiting your review" value=pending_count tone="amber" %}
+    {% include "core/_stat_card.html" with icon="bi-patch-check" label="Verified by you" value=verified_count tone="teal" %}
+</div>
+
+<div class="card">
+    <div class="px-4 pt-3 pb-2"><h6 class="fw-bold mb-0">Assigned examinations</h6></div>
     {% if examinations %}
-        <table class="table table-hover mt-3">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
             <thead>
                 <tr>
-                    <th>ID</th>
+                    <th class="ps-4">ID</th>
                     <th>Patient</th>
                     <th>Date</th>
+                    <th>Hospital / clinic</th>
                     <th>Status</th>
-                    <th></th>
+                    <th class="pe-4"></th>
                 </tr>
             </thead>
             <tbody>
                 {% for exam in examinations %}
                 <tr>
-                    <td>#{{ exam.id }}</td>
+                    <td class="ps-4 fw-semibold">#{{ exam.id }}</td>
                     <td>{{ exam.patient }}</td>
-                    <td>{{ exam.examination_date }}</td>
-                    <td><span class="badge bg-info text-dark">{{ exam.get_status_display }}</span></td>
-                    <td><a href="{% url 'examination_detail' exam_id=exam.id %}" class="btn btn-sm btn-outline-primary">View</a></td>
+                    <td>{{ exam.examination_date|date:"d M Y" }}</td>
+                    <td>{{ exam.hospital_clinic }}</td>
+                    <td><span class="status-badge status-{{ exam.status }}">{{ exam.get_status_display }}</span></td>
+                    <td class="pe-4 text-end">
+                        {% if exam.status == "verified" %}
+                            <a href="{% url 'examination_detail' exam_id=exam.id %}" class="btn btn-sm btn-outline-primary">View</a>
+                        {% else %}
+                            <a href="{% url 'examination_detail' exam_id=exam.id %}" class="btn btn-sm btn-primary">Review</a>
+                        {% endif %}
+                    </td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>
+    </div>
     {% else %}
-        <p class="text-muted mt-3">No examinations assigned yet.</p>
+    <div class="text-center py-5 px-3">
+        <div class="feature-icon mb-3"><i class="bi bi-inbox"></i></div>
+        <h6 class="fw-bold">No examinations assigned yet</h6>
+        <p class="text-muted small mb-0">When a patient selects you for an examination, it will appear here.</p>
+    </div>
     {% endif %}
 </div>
 {% endblock %}

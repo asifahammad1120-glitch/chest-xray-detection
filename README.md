@@ -90,14 +90,6 @@ Visit `http://127.0.0.1:8000/`.
 - **False-positive filtering:** rather than relying solely on a CNN "Normal" class (data-limited, only ~85 source images), the pipeline also filters low-confidence YOLO detections via a confidence threshold before classification.
 - **Duplicate detection suppression:** an IoU-based filter removes near-duplicate same-class YOLO boxes before they reach the CNN or the report.
 
-## Deliverables
-
-- [x] Trained YOLO + CNN models
-- [x] Dataset preparation & training notebooks
-- [x] Full Django application
-- [ ] Project report
-- [ ] Presentation (PPT)
-- [ ] Demonstration video
 
 ## License
 

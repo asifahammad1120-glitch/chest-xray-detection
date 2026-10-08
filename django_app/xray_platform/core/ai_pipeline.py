@@ -127,28 +127,35 @@ def run_detection(image_path):
     return _deduplicate_detections(detections)
 
 
+CROP_PADDING = 0.10  # same padding used when the CNN training crops were generated
+
+
 def classify_crop(image: Image.Image, box):
     """
-    Crops the given box out of the image and runs the CNN classifier on it.
+    Crops the given box (with the same padding used in training) and runs the CNN.
     Returns (predicted_class_name, confidence).
     """
     x1, y1, x2, y2 = box
-    crop = image.crop((x1, y1, x2, y2)).convert("RGB")
+    pad_x = (x2 - x1) * CROP_PADDING / 2
+    pad_y = (y2 - y1) * CROP_PADDING / 2
+    img_w, img_h = image.size
+
+    left = max(0, int(x1 - pad_x))
+    top = max(0, int(y1 - pad_y))
+    right = min(img_w, int(x2 + pad_x))
+    bottom = min(img_h, int(y2 + pad_y))
+
+    crop = image.crop((left, top, right, bottom)).convert("RGB")
     crop_resized = crop.resize(CNN_INPUT_SIZE)
 
     arr = np.array(crop_resized, dtype=np.float32)
-    arr = np.expand_dims(arr, axis=0)  # add batch dimension: (1, 224, 224, 3)
+    arr = np.expand_dims(arr, axis=0)
 
     model = get_cnn_model()
-    # Note: preprocessing (efficientnet.preprocess_input) is already baked
-    # into the model's own input layer from training, so we pass raw pixels.
     predictions = model.predict(arr, verbose=0)[0]
 
     predicted_idx = int(np.argmax(predictions))
-    predicted_class = CNN_CLASS_NAMES[predicted_idx]
-    confidence = float(predictions[predicted_idx])
-
-    return predicted_class, confidence
+    return CNN_CLASS_NAMES[predicted_idx], float(predictions[predicted_idx])
 
 
 def draw_annotated_image(image: Image.Image, detections_with_classification):
